@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Account & Withdraw</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f2f4f8;
+}
+.box{
+  max-width:480px;
+  margin:25px auto;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 6px 20px rgba(0,0,0,.15);
+  overflow:hidden;
+}
+.header{
+  background:#243b55;
+  color:#fff;
+  padding:18px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  position: relative;
+}
+.header button{
+  position: absolute;
+  right: 15px;
+  top: 12px;
+  padding:6px 10px;
+  font-size:14px;
+  border:none;
+  border-radius:6px;
+  background:#1abc9c;
+  color:#fff;
+  cursor:pointer;
+}
+.section{
+  padding:20px;
+}
+h3{
+  margin-top:0;
+  color:#243b55;
+  border-bottom:1px solid #ddd;
+  padding-bottom:8px;
+}
+.row{
+  margin:10px 0;
+  font-size:15px;
+}
+.row span{
+  float:right;
+  font-weight:bold;
+}
+.clear{clear:both}
+.note{
+  font-size:13px;
+  color:#555;
+  margin-top:10px;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:18px;
+  font-size:15px;
+  border:none;
+  border-radius:8px;
+  background:#1abc9c;
+  color:#fff;
+  cursor:pointer;
+}
+button:disabled{
+  background:#aaa;
+  cursor:not-allowed;
+}
+.msg{
+  margin-top:12px;
+  text-align:center;
+  font-weight:bold;
+}
+.divider{
+  height:10px;
+  background:#f2f4f8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <div class="header">
+    Account & Withdraw
+    <button onclick="openAdmin()">Admin</button>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="section">
+    <h3>Profile</h3>
+    <input type="text" id="username" placeholder="Username">
+    <input type="email" id="email" placeholder="Email">
+    <button onclick="updateProfile()">Update Profile</button>
+    <div class="msg" id="profileMsg"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- BALANCE -->
+  <div class="section">
+    <h3>Balance Info</h3>
+    <div class="row">Points <span id="points">0</span></div>
+    <div class="clear"></div>
+    <div class="row">Balance (₹) <span id="balance">₹0</span></div>
+    <div class="clear"></div>
+    <div class="note">
+      ℹ Conversion: <b>1000 Points = ₹70</b><br>
+      🔒 Minimum Withdraw: <b>₹70</b>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- WITHDRAW -->
+  <div class="section">
+    <h3>Withdraw (UPI)</h3>
+    <input type="tel" id="phone" placeholder="UPI linked mobile number">
+    <input type="text" id="upi" placeholder="UPI ID (optional)">
+    <button id="withdrawBtn" onclick="withdraw()">Request Withdraw</button>
+    <div class="msg" id="msg"></div>
+    <div class="note">⏱ Payment will be processed within 24 hours.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- REFERRAL -->
+  <div class="section">
+    <h3>Refer & Earn</h3>
+    <input type="text" id="referralLink" readonly>
+    <button onclick="copyReferral()">Copy Referral Link</button>
+    <div class="msg" id="refMsg"></div>
+  </div>
+
+</div>
+
+<script>
+/* ===== USER PROFILE ===== */
+document.getElementById("username").value = localStorage.getItem("username") || "";
+document.getElementById("email").value = localStorage.getItem("email") || "";
+
+function updateProfile(){
+  const username = document.getElementById("username").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const msg = document.getElementById("profileMsg");
+
+  if(username && email){
+    localStorage.setItem("username", username);
+    localStorage.setItem("email", email);
+    msg.innerText = "✅ Profile Updated!";
+    msg.style.color = "green";
+  } else {
+    msg.innerText = "❌ Enter both username and email.";
+    msg.style.color = "red";
+  }
+}
+
+/* ===== POINTS & BALANCE ===== */
+let userPoints = Number(localStorage.getItem("userPoints")) || 0;
+const rate = 70/1000;
+const minWithdraw = 70;
+
+function updateBalance(){
+  let balance = +(userPoints*rate).toFixed(2);
+  document.getElementById("points").innerText = userPoints;
+  document.getElementById("balance").innerText = "₹" + balance;
+
+  const btn = document.getElementById("withdrawBtn");
+  const msgEl = document.getElementById("msg");
+  if(balance < minWithdraw){
+    btn.disabled = true;
+    msgEl.innerText = "❌ Minimum ₹70 balance required";
+    msgEl.style.color = "red";
+  } else {
+    btn.disabled = false;
+    msgEl.innerText = "";
+  }
+}
+updateBalance();
+
+/* ===== REFERRAL ===== */
+const userId = localStorage.getItem("userId") || "demo123";
+document.getElementById("referralLink").value = window.location.origin + "/signup.html?ref=" + userId;
+
+function copyReferral(){
+  const referral = document.getElementById("referralLink");
+  referral.select();
+  referral.setSelectionRange(0,99999);
+  document.execCommand("copy");
+  document.getElementById("refMsg").innerText = "✅ Referral link copied!";
+}
+
+/* ===== WITHDRAW ===== */
+function withdraw(){
+  const phone = document.getElementById("phone").value.trim();
+  const upi = document.getElementById("upi").value.trim();
+  const msg = document.getElementById("msg");
+
+  if(phone.length<10){
+    msg.innerText = "❌ Enter valid phone number";
+    msg.style.color = "red";
+    return;
+  }
+
+  const balance = +(userPoints*rate).toFixed(2);
+  if(balance<minWithdraw){
+    msg.innerText = "❌ Minimum ₹70 balance required";
+    msg.style.color = "red";
+    return;
+  }
+
+  const paymentTarget = upi!=="" ? upi : phone;
+
+  // Save request (demo, later Firebase)
+  const request = {
+    userId: userId,
+    username: localStorage.getItem("username") || "Guest",
+    phone: phone,
+    upi: upi||"Not provided",
+    sendTo: paymentTarget,
+    amount: balance,
+    status: "Pending",
+    time: new Date().toLocaleString()
+  };
+  console.log("Withdraw Request:", request);
+
+  msg.innerText = "✅ Withdraw request submitted!";
+  msg.style.color = "green";
+
+  // reset points
+  userPoints = 0;
+  localStorage.setItem("userPoints", userPoints);
+  updateBalance();
+}
+
+/* ===== ADMIN BUTTON ===== */
+function openAdmin(){
+  const pass = prompt("Enter Admin Password");
+  if(pass==="ADMIN@1234"){
+    window.location.href="admin.html"; // Replace with your Admin page
+  } else {
+    alert("❌ Access Denied");
+  }
+}
+</script>
+
+</body>
+</html>
