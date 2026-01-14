@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Earning Hub | Login</title>
+<meta name="viewport" indicates="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+}
+
+.box{
+  background:#fff;
+  width:340px;
+  padding:30px;
+  border-radius:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  text-align:center;
+}
+
+.box h2{
+  margin-bottom:20px;
+  color:#2c5364;
+}
+
+.box input{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:15px;
+}
+
+.box button{
+  width:100%;
+  padding:12px;
+  background:#2c5364;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:15px;
+}
+
+.box button:hover{
+  background:#1b3a4b;
+}
+
+.box p{
+  margin-top:15px;
+  font-size:14px;
+}
+
+.box a{
+  color:#2c5364;
+  font-weight:bold;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Login</h2>
+
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+
+  <button onclick="loginUser()">Login</button>
+
+  <p>Don’t have an account?
+    <a href="signup.html">Sign Up</a>
+  </p>
+</div>
+
+<!-- Firebase + JS -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCs7KdEssF52r0BTBeidCic7gjK-qcz7Yo",
+    authDomain: "earning-hub-889ea.firebaseapp.com",
+    projectId: "earning-hub-889ea",
+    storageBucket: "earning-hub-889ea.firebasestorage.app",
+    messagingSenderId: "667557564288",
+    appId: "1:667557564288:web:fa4268685f1bd46c997b65"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.loginUser = function(){
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        alert("Login successful ✅");
+        window.location.href = "dashboard.html";
+      })
+      .catch(error => {
+        alert(error.message);
+      });
+  }
+</script>
+
+</body>
+</html>
