@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel – Earning Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+}
+
+header {
+  background: #0b3c5d;
+  color: #fff;
+  padding: 15px;
+  text-align: center;
+  font-size: 22px;
+}
+
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+input[type=text], input[type=password] {
+  width: 95%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background: #1abc9c;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: #16a085;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+th {
+  background: #16a085;
+  color: #fff;
+}
+
+.status-pending {
+  color: orange;
+  font-weight: bold;
+}
+
+.status-paid {
+  color: green;
+  font-weight: bold;
+}
+
+.msg {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.actions button {
+  margin: 2px;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<header>Earning Hub – Admin Panel</header>
+
+<div class="container" id="loginDiv">
+  <h2>Admin Login</h2>
+  <input type="text" id="adminUser" placeholder="Username / Email">
+  <input type="password" id="adminPass" placeholder="Password">
+  <button onclick="adminLogin()">Login</button>
+  <div class="msg" id="loginMsg"></div>
+</div>
+
+<div class="container hidden" id="dashboardDiv">
+  <h2>Withdraw Requests</h2>
+  <button onclick="logout()">Logout</button>
+  <table>
+    <thead>
+      <tr>
+        <th>User Phone</th>
+        <th>UPI ID</th>
+        <th>Amount ($)</th>
+        <th>Status</th>
+        <th>Time</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="requestList">
+      <tr><td colspan="6">Loading requests...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCs7KdEssF52r0BTBeidCic7gjK-qcz7Yo",
+  authDomain: "earning-hub-889ea.firebaseapp.com",
+  databaseURL: "https://earning-hub-889ea-default-rtdb.firebaseio.com",
+  projectId: "earning-hub-889ea",
+  storageBucket: "earning-hub-889ea.appspot.com",
+  messagingSenderId: "667557564288",
+  appId: "1:667557564288:web:fa4268685f1bd46c997b65"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Admin credentials (change as per your choice)
+const ADMIN_USER = "admin@earninghub.com";
+const ADMIN_PASS = "Admin123";
+
+// Login function
+function adminLogin() {
+  const user = document.getElementById("adminUser").value.trim();
+  const pass = document.getElementById("adminPass").value.trim();
+  const msg = document.getElementById("loginMsg");
+
+  if(user === ADMIN_USER && pass === ADMIN_PASS){
+    document.getElementById("loginDiv").classList.add("hidden");
+    document.getElementById("dashboardDiv").classList.remove("hidden");
+    loadRequests();
+  } else {
+    msg.innerText = "❌ Invalid credentials!";
+    msg.style.color = "red";
+  }
+}
+
+window.adminLogin = adminLogin;
+
+// Logout
+function logout() {
+  document.getElementById("dashboardDiv").classList.add("hidden");
+  document.getElementById("loginDiv").classList.remove("hidden");
+  document.getElementById("adminUser").value = "";
+  document.getElementById("adminPass").value = "";
+  document.getElementById("loginMsg").innerText = "";
+}
+
+// Load withdraw requests
+function loadRequests(){
+  const requestRef = ref(db, "withdrawRequests");
+  const list = document.getElementById("requestList");
+
+  onValue(requestRef, (snapshot) => {
+    list.innerHTML = "";
+    if(snapshot.exists()){
+      snapshot.forEach(child => {
+        const key = child.key;
+        const data = child.val();
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${data.phone}</td>
+          <td>${data.upi || "-"}</td>
+          <td>${data.amount}</td>
+          <td class="${data.status === 'Paid' ? 'status-paid' : 'status-pending'}">${data.status}</td>
+          <td>${data.time}</td>
+          <td class="actions">
+            <button onclick="markPaid('${key}')">Mark Paid</button>
+            <button onclick="deleteRequest('${key}')">Delete</button>
+          </td>
+        `;
+        list.appendChild(tr);
+      });
+    } else {
+      list.innerHTML = "<tr><td colspan='6'>No requests found</td></tr>";
+    }
+  });
+}
+
+// Mark Paid
+function markPaid(key){
+  const reqRef = ref(db, "withdrawRequests/" + key);
+  update(reqRef, {status: "Paid"});
+}
+
+// Delete request
+function deleteRequest(key){
+  if(confirm("Are you sure you want to delete this request?")){
+    const reqRef = ref(db, "withdrawRequests/" + key);
+    remove(reqRef);
+  }
+}
+
+window.markPaid = markPaid;
+window.deleteRequest = deleteRequest;
+window.logout = logout;
+
+</script>
+
+</body>
+</html>
