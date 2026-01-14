@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signup | Earning Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+.auth-container{
+  width:100%;
+  display:flex;
+  justify-content:center;
+}
+
+.auth-box{
+  background:#fff;
+  width:320px;
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.3);
+  text-align:center;
+}
+
+.auth-box h2{
+  margin:0;
+  color:#2c5364;
+}
+
+.subtitle{
+  margin:5px 0 25px;
+  color:#777;
+  font-size:14px;
+}
+
+.input-group{
+  position:relative;
+  margin-bottom:20px;
+}
+
+.input-group input{
+  width:100%;
+  padding:12px 10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  outline:none;
+  font-size:14px;
+}
+
+.input-group label{
+  position:absolute;
+  top:50%;
+  left:10px;
+  color:#999;
+  font-size:13px;
+  transform:translateY(-50%);
+  pointer-events:none;
+  transition:0.3s;
+  background:#fff;
+  padding:0 5px;
+}
+
+.input-group input:focus + label,
+.input-group input:valid + label{
+  top:-7px;
+  font-size:11px;
+  color:#2c5364;
+}
+
+.auth-btn{
+  width:100%;
+  padding:12px;
+  background:#2c5364;
+  border:none;
+  color:#fff;
+  font-size:15px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.auth-btn:hover{
+  background:#203a43;
+}
+
+.switch{
+  margin-top:18px;
+  font-size:13px;
+  color:#555;
+}
+
+.switch a{
+  color:#2c5364;
+  text-decoration:none;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="auth-container">
+  <div class="auth-box">
+    <h2>Create Account</h2>
+    <p class="subtitle">Join Earning Hub</p>
+
+    <div class="input-group">
+      <input type="email" id="email" required>
+      <label>Email Address</label>
+    </div>
+
+    <div class="input-group">
+      <input type="password" id="password" required>
+      <label>Password (min 6)</label>
+    </div>
+
+    <button class="auth-btn" onclick="signupUser()">Sign Up</button>
+
+    <p class="switch">
+      Already have an account?
+      <a href="login.html">Login</a>
+    </p>
+  </div>
+</div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCs7KdEssF52r0BTBeidCic7gjK-qcz7Yo",
+    authDomain: "earning-hub-889ea.firebaseapp.com",
+    projectId: "earning-hub-889ea",
+    storageBucket: "earning-hub-889ea.firebasestorage.app",
+    messagingSenderId: "667557564288",
+    appId: "1:667557564288:web:fa4268685f1bd46c997b65"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.signupUser = function () {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        alert("Signup successful ✅");
+window.location.href = "login.html";
+        window.location.href = "dashboard.html";
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  };
+</script>
+</body>
+</html>
